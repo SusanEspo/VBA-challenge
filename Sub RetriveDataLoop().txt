@@ -1,0 +1,115 @@
+Sub RetriveDataLoop()
+    
+    
+    Dim Ticker_Current As String   'Ticker current row
+    Dim Ticker_Compare As String   'holds the Ticker from last time the ticker change
+    
+    
+    Dim Closing As Double   ' set the qty for close
+    Dim Vol As Double       ' set the qty for vol
+    
+    Dim Open_Year_2018    As Double    'holds the <open> field by ticker,year
+    Dim Close_Year_2018   As Double    'holds the <close> field by ticker,year
+                                      
+    Dim Open_Year_2018_row As Long
+    
+    Dim Yearly_Change     As Double    'Open_Year_2018 minus  Close_Year_2018
+    Dim Percent_Change     As Double   'Yearly_Change divided by  Open_Year_2018
+
+    Dim Total_Volume      As Double    'holds the Volume per ticker
+    
+    Dim Row_Pointer_Outputs   As Integer    'keep count where to write out the aggregate measures
+    
+    Dim greatest_increase As Double
+    Dim greatest_increase_ticker As String
+    
+    Dim greatest_decrease As Double
+    Dim greatest_decrease_ticker As String
+    
+    For Each ws In Worksheets
+    ws.Activate
+    
+    
+    lastrow = Cells(Rows.Count, 1).End(xlUp).Row 'gets a row count -
+    'goes back to find the first row - contiusous space with not data
+     Open_Year_2018_row = 2
+    
+    
+    'Starting Housework
+    Open_Year_2018 = Cells(Open_Year_2018_row, 3).Value
+    Row_Pointer_Outputs = 2       '?? should go after the writing of the aggs outputs
+    greatest_increase = 0
+    greatest_decrease = 0
+   
+    'testing only
+    
+    
+    
+    'loop to get data
+    
+    
+        'For i = 2 To 16
+    For i = 2 To lastrow
+            Total_Volume = Total_Volume + Cells(i, 7).Value
+            
+            Ticker_Current = Cells(i, 1).Value
+            Ticker_Compare = Cells(i + 1, 1).Value
+            
+            If Ticker_Compare <> Ticker_Current Then
+        
+            'summing data in varible and displaying on spreedsheet
+                
+                'write it
+                Cells(Row_Pointer_Outputs, 10).Value = Ticker_Current
+                Close_Year_2018 = Cells(i, 6).Value
+                
+                
+                
+                
+                Yearly_Change = Open_Year_2018 - Close_Year_2018
+                Percent_Change = Yearly_Change / Open_Year_2018
+                    If Percent_Change > greatest_increase Then
+                        greatest_increase = Percent_Change
+                        greatest_increase_ticker = Ticker_Current
+                    End If
+                    
+                    If Percent_Change < greatest_decrease Then
+                        greatest_decrease = Percent_Change
+                        greatest_decrease_ticker = Ticker_Current
+                    End If
+                    
+               Cells(Row_Pointer_Outputs, 11).Value = Yearly_Change
+               Cells(Row_Pointer_Outputs, 12).Value = Percent_Change
+               Cells(Row_Pointer_Outputs, 12).NumberFormat = "0.00%"
+               Cells(Row_Pointer_Outputs, 13).Value = Total_Volume
+                
+                Row_Pointer_Outputs = Row_Pointer_Outputs + 1
+                Total_Volume = 0
+                
+                Open_Year_2018_row = i + 1
+                Open_Year_2018 = Cells(Open_Year_2018_row, 3).Value
+
+       ' if they match add to the total
+            ElseIf Ticker_Current = Ticker_Compare Then
+                Cells(Row_Pointer_Outputs, 10).Value = Ticker_Current
+               
+        End If
+        
+ 
+    
+    
+    Next i
+    
+    Range("p2").Value = greatest_increase_ticker
+    Range("q2").Value = greatest_increase
+    Range("q2").NumberFormat = "0.00%"
+    
+    
+    Range("p3").Value = greatest_decrease_ticker
+    Range("q3").Value = greatest_decrease
+    Range("q3").NumberFormat = "0.00%"
+    
+    
+    Next ws
+    
+End Sub
